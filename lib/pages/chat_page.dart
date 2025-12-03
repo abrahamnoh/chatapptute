@@ -1,10 +1,11 @@
+import 'package:chatapptute/components/chat_bubble.dart';
 import 'package:chatapptute/components/my_textfield.dart';
 import 'package:chatapptute/services/auth/auth_service.dart';
 import 'package:chatapptute/services/chat/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
 
   final String receiverEmail;
   final String receiverID;
@@ -16,11 +17,17 @@ class ChatPage extends StatelessWidget {
     required this.receiverID,
     });
 
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
     // text controller
     final TextEditingController _messageController = TextEditingController();
 
     // chat & auth services
     final ChatService _chatService = ChatService();
+
     final AuthService _authService = AuthService();
 
     // send message 
@@ -28,7 +35,7 @@ class ChatPage extends StatelessWidget {
       // if there is something inside the textfield
       if (_messageController.text.isNotEmpty){
         //send the message 
-        await _chatService.sendMessage(receiverID, _messageController.text);
+        await _chatService.sendMessage(widget.receiverID, _messageController.text);
 
         // clear text controller
         _messageController.clear();
@@ -38,7 +45,13 @@ class ChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(receiverEmail)),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        title: Text(widget.receiverEmail),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.grey,
+        elevation: 0,
+      ), 
       body: Column(
         children: [
           //display all messages
@@ -57,7 +70,7 @@ class ChatPage extends StatelessWidget {
   Widget _buildMessageList(){
     String senderID = _authService.getCurrentUser()!.uid;
     return StreamBuilder(
-      stream: _chatService.getMessages(receiverID, senderID),
+      stream: _chatService.getMessages(widget.receiverID, senderID),
       builder: (context, snapshot) {
         //errors
         if (snapshot.hasError){
@@ -100,7 +113,10 @@ class ChatPage extends StatelessWidget {
         crossAxisAlignment: 
         isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          Text(data['message']),
+          ChatBubble(message: data["message"],
+          isCurrentUser: isCurrentUser
+          ),
+
         ],
       ),
       );
@@ -108,25 +124,35 @@ class ChatPage extends StatelessWidget {
 
   // build message input
   Widget _buildMessageInput(){
-    return Row(
-      children: [
-        //textfield should take up most of the space
-        Expanded(
-          child: MyTextField(
-            controller: _messageController,
-            hintText: "Type a message",
-            obscureText: false,
-        ),
-        ),
-
-        // send button
-        IconButton(
-          onPressed: sendMessage,
-          icon: const Icon(Icons.arrow_upward,
-        ),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 50.0),
+      child: Row(
+        children: [
+          //textfield should take up most of the space
+          Expanded(
+            child: MyTextField(
+              controller: _messageController,
+              hintText: "Type a message",
+              obscureText: false,
+          ),
+          ),
+      
+          // send button  aqui esta el botton de enviar
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.green,
+              shape: BoxShape.circle,
+            ),
+            margin: const EdgeInsets.only(right: 25),
+            child: IconButton(
+              onPressed: sendMessage,
+              icon: const Icon(Icons.arrow_upward, 
+              color: Colors.white,
+            ),
+            ),
+          ),
+        ], 
+      ),
     );
   }
-
 }
