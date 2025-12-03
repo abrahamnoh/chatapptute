@@ -50,7 +50,9 @@ class HomePage extends StatelessWidget {
         // return list view
 
         return ListView(
-          children: snapshot.data!.map<Widget>((userData) => _buildUserListItem(userData, context)).toList(),
+          children: snapshot.data!
+          .map<Widget>((userData) => _buildUserListItem(userData, context))
+          .toList(),
  
         );
       },
@@ -58,11 +60,13 @@ class HomePage extends StatelessWidget {
    }
 
      //Crear un mosaico de lista individual para el usuario
-     Widget _buildUserListItem(Map<String,dynamic> userData, BuildContext context){
+     Widget _buildUserListItem(
+      Map<String,dynamic> userData, BuildContext context){
       
 
       //display all users except current user
-      return UserTile(
+      if (userData["email"] != _authService.getCurrentUser()!.email){
+        return UserTile(
         text: userData['email'],
         onTap: (){
           //tapped on a user -> go to chat page
@@ -71,11 +75,15 @@ class HomePage extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => ChatPage(
                 receiverEmail: userData['email'],
+                receiverID: userData['uid'],
               ),
             ),
             );
         },
       );
+      } else {
+        return Container();
+      }
 
      }
       

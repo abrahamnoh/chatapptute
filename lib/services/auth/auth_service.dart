@@ -8,6 +8,11 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  //get current user 
+  User? getCurrentUser() {
+    return _auth.currentUser;
+  }
+
 
 
   // sign in
@@ -49,7 +54,7 @@ class AuthService {
         {
           'uid': userCredential.user!.uid,
           'email': userCredential.user!.email,
-        }
+        },
       );
 
 
