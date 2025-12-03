@@ -27,8 +27,53 @@ class _ChatPageState extends State<ChatPage> {
 
     // chat & auth services
     final ChatService _chatService = ChatService();
-
     final AuthService _authService = AuthService();
+
+    // for textfield focus
+    FocusNode myFocusNode = FocusNode();
+
+    @override
+    void initState(){
+      super.initState();
+
+      //add listener to focus node
+      myFocusNode.addListener(() {
+        if (myFocusNode.hasFocus) {
+          // cause a delay so that the keyboard has time to show up
+          // then the amount of remaining space will be calculated,
+          //then scroll down
+          Future.delayed(
+            const Duration(milliseconds: 500),
+            () => scrollDown(),
+          );
+        }
+      });
+
+      // wait a bit for listview to be built, then scroll to bottom
+      Future.delayed(
+        const Duration(milliseconds: 500),
+        () => scrollDown(),
+      );
+    }
+
+    @override
+    void dispose() {
+      myFocusNode.dispose();
+      _messageController.dispose();
+      super.dispose();
+    }
+
+    // screoll controller
+    final ScrollController _scrollController = ScrollController();
+    void scrollDown(){
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(seconds: 1),
+        curve: Curves.fastOutSlowIn,
+      );
+    }
+
+
 
     // send message 
     void sendMessage() async{
@@ -40,6 +85,7 @@ class _ChatPageState extends State<ChatPage> {
         // clear text controller
         _messageController.clear();
       }
+      scrollDown();
     }
 
   @override
@@ -85,8 +131,9 @@ class _ChatPageState extends State<ChatPage> {
         }
 
         // return list view
-
+        
         return ListView(
+          controller: _scrollController,
           children: snapshot.data!.docs
           .map<Widget>((doc) => _buildMessageItem(doc)).toList(),
  
@@ -134,6 +181,7 @@ class _ChatPageState extends State<ChatPage> {
               controller: _messageController,
               hintText: "Type a message",
               obscureText: false,
+              focusNode: myFocusNode,
           ),
           ),
       
